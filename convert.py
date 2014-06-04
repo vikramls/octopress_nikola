@@ -33,7 +33,7 @@ def cleanup_rst(rst):
     """Remove octopress extensions to markdown. 
     Matches: {% img /path/to/image %}
     """
-    txt, num = re.subn(r'{% img\s+([a-zA-Z0-9\\_\/.]+)(.+?)\s+%}', r'\n\n.. image:: \1\n:alt: \2\n', rst, re.DOTALL)
+    txt, num = re.subn(r'{% img\s+([a-zA-Z0-9\\_\/.]+)(.+?)\s+%}', r'\n\n.. image:: \1\n   :alt: \2\n', rst, re.DOTALL)
     return txt
 
 def get_meta(octo_file):
@@ -79,6 +79,7 @@ def main():
         lines.append('.. link: %s' % meta.get('link', ''))
         lines.append('.. description: %s' % meta.get('description', ''))
         lines.append('.. type: %s' % meta.get('type', 'text'))
+        lines.append('')
         lines.append('')
         rst_file = get_rst_file(octo_file, niko_dir)
         f = open(rst_file, 'w')
