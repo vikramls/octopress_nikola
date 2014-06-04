@@ -11,31 +11,30 @@ from subprocess import check_output
 from datetime import datetime
 
 
-PANDOC_TOOL = '/usr/bin/pandoc' # Tested with 1.12.2.1
+PANDOC_TOOL = '/ausr/bin/pandoc' # Tested with 1.12.2.1
 
+if not os.path.isfile(PANDOC_TOOL):
+    print "pandoc not found (%s), stopping." % (PANDOC_TOOL)
+    sys.exit(-1)
+    
 def get_rst(octo_file):
     args = []
     args.append(PANDOC_TOOL)
+    args.append('--no-wrap')
     args.append('-f')
     args.append('markdown')
     args.append('-t')
     args.append('rst')
     args.append(octo_file)
     output = check_output(args)
-    return output.split('\n')
+    return output
 
 def cleanup_rst(rst):
     """Remove octopress extensions to markdown. 
     Matches: {% img /path/to/image %}
     """
-    lines = []
-    for line in rst:
-#        m = re.match(r'.*?\{\%\s+img\s+([a-zA-Z0-9\\_\/.]+)\s+(.*?)\%\}', line)
-#        if m:
-#        img_path = m.group(1).replace('\\', '')
-        lines.append(re.sub(r'.*?\{\%\s+img\s+([a-zA-Z0-9\\_\/.]+)\s+(.*?)\%\}', r'\n.. figure:: \1\n:alt: \2\n', line))
-            
-    return lines
+    txt, num = re.subn(r'{% img\s+([a-zA-Z0-9\\_\/.]+)(.+?)\s+%}', r'\n\n.. image:: \1\n:alt: \2\n', rst, re.DOTALL)
+    return txt
 
 def get_meta(octo_file):
     meta = {}
@@ -57,14 +56,14 @@ def get_meta(octo_file):
 
     return meta
 
-def get_rst_file(octo_file):
+def get_rst_file(octo_file, niko_dir):
     """Converts octopress file name (YYYY-MM-DD-slug.markdown) into the rst file (slug.rst)
     """
     d, l = os.path.split(octo_file)
-    tmp = octo_file.split('.markdown')[0]
+    tmp = l.split('.markdown')[0]
     rst_file = '-'.join(tmp.split('-')[3:])
     rst_file += '.rst'
-    return os.path.join(d, rst_file)
+    return os.path.join(niko_dir, rst_file)
 
 def main():
     octo_dir = sys.argv[1]
@@ -81,12 +80,12 @@ def main():
         lines.append('.. description: %s' % meta.get('description', ''))
         lines.append('.. type: %s' % meta.get('type', 'text'))
         lines.append('')
-        rst_file = get_rst_file(octo_file)
+        rst_file = get_rst_file(octo_file, niko_dir)
         f = open(rst_file, 'w')
         f.write('\n'.join(lines))
 
         rst = get_rst(octo_file)
-        f.write('\n'.join(cleanup_rst(rst)))
+        f.write(cleanup_rst(rst))
         f.close()
         print 'INFO: Processed (%s) -- (%s)' % (octo_file, rst_file)
         
