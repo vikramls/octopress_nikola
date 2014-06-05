@@ -11,7 +11,7 @@ from subprocess import check_output
 from datetime import datetime
 
 
-PANDOC_TOOL = '/ausr/bin/pandoc' # Tested with 1.12.2.1
+PANDOC_TOOL = '/usr/bin/pandoc' # Tested with 1.12.2.1
 
 if not os.path.isfile(PANDOC_TOOL):
     print "pandoc not found (%s), stopping." % (PANDOC_TOOL)
